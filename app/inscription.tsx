@@ -12,6 +12,7 @@ export default function Inscription() {
   const [role, setRole] = useState('etudiant');
   const [chargement, setChargement] = useState(false);
   const router = useRouter();
+  const [montrerMotDePasse, setMontrerMotDePasse] = useState(false);
 
   const sInscrire = async () => {
     if (!nom || !email || !motDePasse) {
@@ -60,14 +61,19 @@ export default function Inscription() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
+      <View style={styles.champContainer}>
       <TextInput
-        style={styles.champ}
+        style={styles.champSansMargin}
         placeholder="Mot de passe (min. 6 caractères)"
         placeholderTextColor="#8BA4C4"
         value={motDePasse}
         onChangeText={setMotDePasse}
-        secureTextEntry
+        secureTextEntry={!montrerMotDePasse}
       />
+      <TouchableOpacity onPress={() => setMontrerMotDePasse(!montrerMotDePasse)}>
+        <Text style={styles.oeil}>{montrerMotDePasse ? '🙈' : '👁️'}</Text>
+      </TouchableOpacity>
+      </View>
 
       <Text style={styles.labelRole}>Je suis :</Text>
       <View style={styles.rolesContainer}>
@@ -167,4 +173,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
+  champContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: 'rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.2)',
+  marginBottom: 16,
+  paddingRight: 14,
+},
+champSansMargin: {
+  flex: 1,
+  padding: 14,
+  color: '#FFFFFF',
+  fontSize: 15,
+},
+oeil: {
+  fontSize: 18,
+},
 });

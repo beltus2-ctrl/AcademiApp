@@ -1,13 +1,15 @@
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [chargement, setChargement] = useState(false);
+  const [montrerMotDePasse, setMontrerMotDePasse] = useState(false);
   const router = useRouter();
 
   const seConnecter = async () => {
@@ -17,8 +19,19 @@ export default function Login() {
     }
     setChargement(true);
     try {
-      await signInWithEmailAndPassword(auth, email, motDePasse);
-      Alert.alert('Succès', 'Connexion réussie !');
+      const resultat = await signInWithEmailAndPassword(auth, email, motDePasse);
+      const docRef = doc(db, 'utilisateurs', resultat.user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const role = docSnap.data().role;
+        if (role === 'etudiant') {
+          router.replace('/dashboard/etudiant');
+        } else if (role === 'professeur') {
+          router.replace('/dashboard/professeur');
+        } else if (role === 'admin') {
+          router.replace('/dashboard/admin');
+        }
+      }
     } catch (erreur) {
       Alert.alert('Erreur', 'Email ou mot de passe incorrect');
     } finally {
@@ -27,7 +40,7 @@ export default function Login() {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <Text style={styles.titre}>Connexion 🎓</Text>
       <TextInput
         style={styles.champ}
@@ -38,14 +51,19 @@ export default function Login() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <TextInput
-        style={styles.champ}
-        placeholder="Mot de passe"
-        placeholderTextColor="#8BA4C4"
-        value={motDePasse}
-        onChangeText={setMotDePasse}
-        secureTextEntry
-      />
+      <View style={styles.champContainer}>
+        <TextInput
+          style={styles.champSansMargin}
+          placeholder="Mot de passe"
+          placeholderTextColor="#8BA4C4"
+          value={motDePasse}
+          onChangeText={setMotDePasse}
+          secureTextEntry={!montrerMotDePasse}
+        />
+        <TouchableOpacity onPress={() => setMontrerMotDePasse(!montrerMotDePasse)}>
+          <Text style={styles.oeil}>{montrerMotDePasse ? '🙈' : '👁️'}</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.bouton} onPress={seConnecter}>
         <Text style={styles.texteBouton}>
           {chargement ? 'Connexion...' : 'Se connecter'}
@@ -59,6 +77,10 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   titre: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -75,6 +97,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
+  },
+  champContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    marginBottom: 16,
+    paddingRight: 14,
+  },
+  champSansMargin: {
+    flex: 1,
+    padding: 14,
+    color: '#FFFFFF',
+    fontSize: 15,
+  },
+  oeil: {
+    fontSize: 18,
   },
   bouton: {
     backgroundColor: '#4A90D9',

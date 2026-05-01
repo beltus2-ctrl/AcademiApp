@@ -7,7 +7,6 @@ export default function RootLayout() {
         contentStyle: {
           backgroundColor: "#0F2044",
           paddingHorizontal: 24,
-          justifyContent: "center",
           flex: 1,
         }
       }}
@@ -15,6 +14,9 @@ export default function RootLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="inscription" options={{ headerShown: false }} />
+      <Stack.Screen name="dashboard/etudiant" options={{ headerShown: false }} />
+      <Stack.Screen name="dashboard/professeur" options={{ headerShown: false }} />
+      <Stack.Screen name="dashboard/admin" options={{ headerShown: false }} />
     </Stack>
   );
 }
