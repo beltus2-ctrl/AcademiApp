@@ -31,6 +31,8 @@ export default function Inscription() {
         email: email,
         role: role,
         dateInscription: new Date().toISOString(),
+        requetesRestantes: 20,
+        derniereReinitialisation: new Date().toDateString(),
       });
       Alert.alert('Succès', 'Compte créé avec succès !');
       router.replace('/login');
