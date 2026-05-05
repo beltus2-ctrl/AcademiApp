@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView,
   Platform,
@@ -8,6 +8,7 @@ import {
   Text, TextInput, TouchableOpacity,
   View
 } from 'react-native';
+import { obtenirQuota, verifierEtDecrementerQuota } from '../../utils/quota';
 
 const API_URL = 'http://192.168.145.69:3000';
 
@@ -21,6 +22,15 @@ export default function Cours() {
   const [chargement, setChargement] = useState(false);
   const [mode, setMode] = useState('resumer');
   const [reponseOuverte, setReponseOuverte] = useState(true);
+  const [quotaRestant, setQuotaRestant] = useState<number | null>(null);
+
+  useEffect(() => {
+    const chargerQuota = async () => {
+      const quota = await obtenirQuota();
+      setQuotaRestant(quota);
+    };
+    chargerQuota();
+  }, []);
 
   const resumerChapitre = async () => {
     if (!titre.trim()) {
@@ -28,6 +38,13 @@ export default function Cours() {
       return;
     }
     setChargement(true);
+    const quota = await verifierEtDecrementerQuota();
+    if (!quota.autorise) {
+      Alert.alert('⚠️ Quota atteint', quota.message || 'Reessayez demain.');
+      setChargement(false);
+      return;
+    }
+    setQuotaRestant(quota.requetesRestantes);
     setReponse('');
     try {
       const response = await fetch(`${API_URL}/resumer-chapitre`, {
@@ -46,7 +63,7 @@ export default function Cours() {
       if (response.status === 400) {
         Alert.alert('Donnee manquante', data.erreur || 'Verifiez vos informations');
         return;
-      }
+      };
       if (!response.ok) {
         Alert.alert('Erreur serveur', data.erreur || 'Une erreur inattendue est survenue');
         return;
@@ -73,6 +90,13 @@ export default function Cours() {
       return;
     }
     setChargement(true);
+    const quota = await verifierEtDecrementerQuota();
+    if (!quota.autorise) {
+      Alert.alert('⚠️ Quota atteint', quota.message || 'Reessayez demain.');
+      setChargement(false);
+      return;
+    }
+    setQuotaRestant(quota.requetesRestantes);
     setReponse('');
     try {
       const response = await fetch(`${API_URL}/ameliorer-notes`, {
@@ -145,6 +169,26 @@ export default function Cours() {
           <View style={{ flex: 1 }}>
             <Text style={styles.banniereTitre}>AcademiAI</Text>
             <Text style={styles.banniereTexte}>Ton assistant academique intelligent</Text>
+                       {quotaRestant !== null && (
+  <View style={styles.quotaContainer}>
+    <Text style={styles.quotaTexte}>
+      {quotaRestant > 5
+        ? `✅ ${quotaRestant} requetes restantes aujourd'hui`
+        : quotaRestant > 0
+        ? `⚠️ Attention : ${quotaRestant} requetes restantes`
+        : `❌ Quota journalier epuise`}
+    </Text>
+    <View style={styles.quotaBarre}>
+      <View style={[
+        styles.quotaProgression,
+        { 
+          width: `${(quotaRestant / 20) * 100}%` as any,
+          backgroundColor: quotaRestant > 5 ? '#4CAF50' : quotaRestant > 0 ? '#FFC107' : '#FF5252'
+        }
+      ]} />
+    </View>
+  </View>
+)}
           </View>
           <View style={styles.banniereStatut}>
             <View style={styles.pointVert} />
@@ -333,4 +377,28 @@ const styles = StyleSheet.create({
   reponseTexte: { color: '#C8D8EE', fontSize: 14, lineHeight: 24 },
   boutonNouvelle: { margin: 16, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(74,144,217,0.4)', alignItems: 'center', backgroundColor: 'rgba(74,144,217,0.08)' },
   texteBoutonNouvelle: { color: '#4A90D9', fontWeight: '600', fontSize: 14 },
+  quotaContainer: {
+  backgroundColor: 'rgba(255,255,255,0.05)',
+  borderRadius: 10,
+  padding: 12,
+  marginBottom: 20,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.1)',
+},
+quotaTexte: {
+  color: '#C8D8EE',
+  fontSize: 13,
+  fontWeight: '600',
+  marginBottom: 8,
+},
+quotaBarre: {
+  height: 6,
+  backgroundColor: 'rgba(255,255,255,0.1)',
+  borderRadius: 3,
+  overflow: 'hidden',
+},
+quotaProgression: {
+  height: '100%',
+  borderRadius: 3,
+},
 });
