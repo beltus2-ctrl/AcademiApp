@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { obtenirQuota, verifierEtDecrementerQuota } from '../../utils/quota';
 
-const API_URL = 'http://192.168.145.69:3000';
+const API_URL = 'http://192.168.209.69:3000';
 
 export default function Cours() {
   const router = useRouter();
