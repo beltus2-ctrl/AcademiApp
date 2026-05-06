@@ -20,6 +20,8 @@ export default function RootLayout() {
       <Stack.Screen name="cours/index" options={{ headerShown: false }} />
       <Stack.Screen name="quiz/index" options={{ headerShown: false }} />
       <Stack.Screen name="quiz/resultats" options={{ headerShown: false }} />
+      <Stack.Screen name="exercices/index" options={{ headerShown: false }} />
+      <Stack.Screen name="exercices/exercice" options={{ headerShown: false }} />
     </Stack>
   );
 }

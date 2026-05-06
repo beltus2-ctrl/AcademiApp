@@ -34,7 +34,7 @@ export default function TableauEtudiant() {
   const cartes = [
     { icone: '📸', label: 'Mes Cours', route: '/cours' },
     { icone: '🧠', label: 'Quiz', route: '/quiz' },
-    { icone: '📝', label: 'Examens', route: '/examens' },
+    { icone: '📝', label: 'Examens', route: '/exercices' },
     { icone: '💬', label: 'Chat', route: '/chat' },
     { icone: '📅', label: 'Planning', route: '/planning' },
     { icone: '📞', label: 'Appel Prof', route: '/appel' },
