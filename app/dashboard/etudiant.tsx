@@ -37,7 +37,7 @@ export default function TableauEtudiant() {
     { icone: '📝', label: 'Examens', route: '/exercices' },
     { icone: '💬', label: 'Chat', route: '/chat' },
     { icone: '📅', label: 'Planning', route: '/planning' },
-    { icone: '📞', label: 'Appel Prof', route: '/appel' },
+    { icone: '📞', label: 'Appel Prof', route: '/chat/professeur' },
   ];
 
   return (

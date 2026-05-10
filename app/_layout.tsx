@@ -1,4 +1,9 @@
 import { Stack } from 'expo-router';
+import { LogBox } from "react-native";
+LogBox.ignoreLogs([
+  'VirtualizedLists should never be nested',
+  'Unable to activate keep awake',
+]);
 
 export default function RootLayout() {
   return (
@@ -22,6 +27,9 @@ export default function RootLayout() {
       <Stack.Screen name="quiz/resultats" options={{ headerShown: false }} />
       <Stack.Screen name="exercices/index" options={{ headerShown: false }} />
       <Stack.Screen name="exercices/exercice" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/index" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/communautaire" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/professeur" options={{ headerShown: false }} />
     </Stack>
   );
 }
