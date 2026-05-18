@@ -67,6 +67,7 @@ export default function ChatProfesseur() {
     chargerProfesseurs();
     animerEntree();
     animerPulsation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animerEntree = () => {
@@ -102,7 +103,7 @@ export default function ChatProfesseur() {
     try {
       const docSnap = await getDoc(doc(db, 'utilisateurs', utilisateur.uid));
       if (docSnap.exists()) setProfil(docSnap.data());
-    } catch (e) {}
+    } catch {}
   };
 
   const chargerProfesseurs = async () => {
@@ -125,7 +126,7 @@ export default function ChatProfesseur() {
       Animated.stagger(100, profsAnim.map(anim =>
         Animated.spring(anim, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true })
       )).start();
-    } catch (e) {
+    } catch {
       console.log('Erreur chargement professeurs');
     } finally {
       setChargement(false);
@@ -148,7 +149,7 @@ export default function ChatProfesseur() {
         'Tous les professeurs ont ete notifies. Un professeur vous repondra des que possible.\n\nSi aucun prof n est disponible, AcademiAI prendra le relais ! 🤖',
         [{ text: 'OK' }]
       );
-    } catch (e) {
+    } catch {
       Alert.alert('Erreur', 'Impossible d envoyer l appel.');
       setAppulEnvoye(false);
     }
@@ -273,7 +274,7 @@ export default function ChatProfesseur() {
         });
         setIaEntrain(false);
       }
-    } catch (e) {
+    } catch {
       Alert.alert('Erreur', 'Impossible d envoyer le message.');
       setNouveauMessage(texte);
     } finally {

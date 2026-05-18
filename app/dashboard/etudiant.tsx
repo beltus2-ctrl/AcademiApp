@@ -26,7 +26,7 @@ export default function TableauEtudiant() {
     try {
       await signOut(auth);
       router.replace('/login');
-    } catch (erreur) {
+    } catch {
       Alert.alert('Erreur', 'Impossible de se deconnecter');
     }
   };

@@ -56,6 +56,7 @@ export default function ChatCommunautaire() {
     const unsub = ecouterMessages();
     animerEntree();
     return unsub;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animerEntree = () => {
@@ -78,7 +79,7 @@ export default function ChatCommunautaire() {
     try {
       const docSnap = await getDoc(doc(db, 'utilisateurs', utilisateur.uid));
       if (docSnap.exists()) setProfil(docSnap.data());
-    } catch (e) {}
+    } catch {}
   };
 
   const ecouterMessages = () => {
@@ -112,7 +113,7 @@ export default function ChatCommunautaire() {
         timestamp: serverTimestamp(),
         type: 'texte',
       });
-    } catch (e) {
+    } catch {
       Alert.alert('Erreur', 'Impossible d envoyer le message.');
       setNouveauMessage(texte);
     } finally {

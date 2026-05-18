@@ -1,9 +1,53 @@
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { auth, db } from '../firebaseConfig';
+
+type RoleUtilisateur = 'etudiant' | 'professeur' | 'admin';
+
+const routesParRole: Record<RoleUtilisateur, string> = {
+  etudiant: '/dashboard/etudiant',
+  professeur: '/dashboard/professeur',
+  admin: '/dashboard/admin',
+};
+
+const normaliserRole = (role: unknown): RoleUtilisateur => {
+  if (role === 'professeur' || role === 'admin') return role;
+  return 'etudiant';
+};
+
+const getCodeErreur = (erreur: unknown): string => {
+  if (erreur && typeof erreur === 'object' && 'code' in erreur) {
+    return String((erreur as { code?: unknown }).code);
+  }
+
+  return '';
+};
+
+const getMessageErreurConnexion = (erreur: unknown): string => {
+  const code = getCodeErreur(erreur);
+
+  if (
+    code === 'auth/invalid-credential' ||
+    code === 'auth/user-not-found' ||
+    code === 'auth/wrong-password' ||
+    code === 'auth/invalid-email'
+  ) {
+    return 'Email ou mot de passe incorrect.';
+  }
+
+  if (code === 'auth/network-request-failed' || code === 'unavailable') {
+    return 'Connexion internet impossible. Verifiez votre reseau puis reessayez.';
+  }
+
+  if (code === 'permission-denied') {
+    return 'Connexion reussie, mais le profil utilisateur est inaccessible dans Firestore.';
+  }
+
+  return 'Connexion impossible. Reessayez dans quelques secondes.';
+};
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -13,27 +57,36 @@ export default function Login() {
   const router = useRouter();
 
   const seConnecter = async () => {
-    if (!email || !motDePasse) {
+    const emailNettoye = email.trim().toLowerCase();
+
+    if (!emailNettoye || !motDePasse) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs');
       return;
     }
     setChargement(true);
     try {
-      const resultat = await signInWithEmailAndPassword(auth, email, motDePasse);
+      const resultat = await signInWithEmailAndPassword(auth, emailNettoye, motDePasse);
       const docRef = doc(db, 'utilisateurs', resultat.user.uid);
       const docSnap = await getDoc(docRef);
+      let role: RoleUtilisateur = 'etudiant';
+
       if (docSnap.exists()) {
-        const role = docSnap.data().role;
-        if (role === 'etudiant') {
-          router.replace('/dashboard/etudiant');
-        } else if (role === 'professeur') {
-          router.replace('/dashboard/professeur');
-        } else if (role === 'admin') {
-          router.replace('/dashboard/admin');
-        }
+        role = normaliserRole(docSnap.data().role);
+      } else {
+        await setDoc(docRef, {
+          nom: resultat.user.displayName || emailNettoye.split('@')[0],
+          email: resultat.user.email || emailNettoye,
+          role,
+          dateInscription: new Date().toISOString(),
+          requetesRestantes: 20,
+          derniereReinitialisation: new Date().toDateString(),
+        });
       }
+
+      router.replace(routesParRole[role] as any);
     } catch (erreur) {
-      Alert.alert('Erreur', 'Email ou mot de passe incorrect');
+      console.log('Erreur connexion:', erreur);
+      Alert.alert('Erreur', getMessageErreurConnexion(erreur));
     } finally {
       setChargement(false);
     }
@@ -70,7 +123,7 @@ export default function Login() {
         </Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.replace('/inscription')}>
-        <Text style={styles.lienInscription}>Pas de compte ? S'inscrire</Text>
+        <Text style={styles.lienInscription}>Pas de compte ? S&apos;inscrire</Text>
       </TouchableOpacity>
     </View>
   );

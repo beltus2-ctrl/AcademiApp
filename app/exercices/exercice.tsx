@@ -69,12 +69,12 @@ export default function ExerciceDetail() {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
-  const scoreAnim = useRef(new Animated.Value(0)).current;
   const boutonAnim = useRef(new Animated.Value(1)).current;
   const celebrationAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     chargerExercices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animerTransition = () => {
@@ -116,16 +116,23 @@ export default function ExerciceDetail() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ niveau, nombreExercices: 5 })
       });
-      const data = await response.json();
+      const texte = await response.text();
+      let data: { exercices?: Exercice[]; erreur?: string } = {};
+      try {
+        data = texte ? JSON.parse(texte) : {};
+      } catch {
+        throw new Error(texte || 'Reponse invalide du serveur');
+      }
       if (!response.ok || !data.exercices) {
-        Alert.alert('Erreur', 'Impossible de charger les exercices.');
+        Alert.alert('Erreur', data.erreur || 'Impossible de charger les exercices.');
         router.back();
         return;
       }
       setExercices(data.exercices);
       animerTransition();
     } catch (e) {
-      Alert.alert('🔌 Connexion impossible', 'Verifiez que le backend est lance.');
+      const message = e instanceof Error ? e.message : String(e);
+      Alert.alert('Erreur exacte', message);
       router.back();
     } finally {
       setChargement(false);
@@ -204,7 +211,7 @@ export default function ExerciceDetail() {
           [`xp.${niveau}`]: pointsGagnes,
           derniereActivite: new Date().toISOString(),
         }, { merge: true });
-      } catch (e) {}
+      } catch {}
     }
 
     Alert.alert(

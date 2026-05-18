@@ -5,6 +5,40 @@ import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { auth, db } from '../firebaseConfig';
 
+const getCodeErreur = (erreur: unknown): string => {
+  if (erreur && typeof erreur === 'object' && 'code' in erreur) {
+    return String((erreur as { code?: unknown }).code);
+  }
+
+  return '';
+};
+
+const getMessageErreurInscription = (erreur: unknown): string => {
+  const code = getCodeErreur(erreur);
+
+  if (code === 'auth/email-already-in-use') {
+    return 'Cet email possede deja un compte. Connectez-vous directement.';
+  }
+
+  if (code === 'auth/invalid-email') {
+    return 'Email invalide. Verifiez l adresse saisie.';
+  }
+
+  if (code === 'auth/weak-password') {
+    return 'Le mot de passe doit contenir au moins 6 caracteres.';
+  }
+
+  if (code === 'auth/network-request-failed' || code === 'unavailable') {
+    return 'Connexion internet impossible. Verifiez votre reseau puis reessayez.';
+  }
+
+  if (code === 'permission-denied') {
+    return 'Compte cree, mais le profil utilisateur est bloque par Firestore.';
+  }
+
+  return 'Inscription impossible. Reessayez dans quelques secondes.';
+};
+
 export default function Inscription() {
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
@@ -15,7 +49,10 @@ export default function Inscription() {
   const [montrerMotDePasse, setMontrerMotDePasse] = useState(false);
 
   const sInscrire = async () => {
-    if (!nom || !email || !motDePasse) {
+    const nomNettoye = nom.trim();
+    const emailNettoye = email.trim().toLowerCase();
+
+    if (!nomNettoye || !emailNettoye || !motDePasse) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs');
       return;
     }
@@ -25,10 +62,10 @@ export default function Inscription() {
     }
     setChargement(true);
     try {
-      const resultat = await createUserWithEmailAndPassword(auth, email, motDePasse);
+      const resultat = await createUserWithEmailAndPassword(auth, emailNettoye, motDePasse);
       await setDoc(doc(db, 'utilisateurs', resultat.user.uid), {
-        nom: nom,
-        email: email,
+        nom: nomNettoye,
+        email: emailNettoye,
         role: role,
         dateInscription: new Date().toISOString(),
         requetesRestantes: 20,
@@ -37,7 +74,8 @@ export default function Inscription() {
       Alert.alert('Succès', 'Compte créé avec succès !');
       router.replace('/login');
     } catch (erreur) {
-      Alert.alert('Erreur', 'email invalide ou mot de passe incorrect ! veuillez réessayer.');
+      console.log('Erreur inscription:', erreur);
+      Alert.alert('Erreur', getMessageErreurInscription(erreur));
     } finally {
       setChargement(false);
     }

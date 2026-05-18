@@ -105,12 +105,14 @@ export default function Exercices() {
     chargerProgression();
     animerEntree();
     animerPulsation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (pourcentageQuiz >= 70 && niveauDebloque) {
       debloquerNiveauSuivant(niveauDebloque);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pourcentageQuiz, niveauDebloque]);
 
   const animerEntree = () => {
@@ -155,7 +157,7 @@ export default function Exercices() {
         }, 0);
         setXpTotal(xp);
       }
-    } catch (erreur) {
+    } catch {
       console.log('Erreur chargement progression');
     } finally {
       setChargement(false);
@@ -184,7 +186,7 @@ export default function Exercices() {
             niveauxDebloques: nouveauxNiveaux,
             scores: { ...scoresPrecedents, [niveauActuel]: pourcentageQuiz }
           }, { merge: true });
-        } catch (erreur) {
+        } catch {
           console.log('Erreur sauvegarde progression');
         }
         setTimeout(() => {

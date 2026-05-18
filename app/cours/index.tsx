@@ -74,7 +74,7 @@ export default function Cours() {
       } else {
         Alert.alert('Reponse vide', 'AcademiAI n\'a pas pu generer de reponse. Reessayez.');
       }
-    } catch (erreur) {
+    } catch {
       Alert.alert(
         '🔌 Connexion impossible',
         'Impossible de contacter le serveur.\n\nVerifiez que :\n• Le backend est lance\n• Vous etes sur le bon reseau'
@@ -126,7 +126,7 @@ export default function Cours() {
       } else {
         Alert.alert('Reponse vide', 'AcademiAI n\'a pas pu analyser vos notes. Reessayez.');
       }
-    } catch (erreur) {
+    } catch {
       Alert.alert(
         '🔌 Connexion impossible',
         'Impossible de contacter le serveur.\n\nVerifiez que :\n• Le backend est lance\n• Vous etes sur le bon reseau'

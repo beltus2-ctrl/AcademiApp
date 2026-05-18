@@ -30,6 +30,9 @@ export default function RootLayout() {
       <Stack.Screen name="chat/index" options={{ headerShown: false }} />
       <Stack.Screen name="chat/communautaire" options={{ headerShown: false }} />
       <Stack.Screen name="chat/professeur" options={{ headerShown: false }} />
+      <Stack.Screen name="examens/index" options={{ headerShown: false }} />
+      <Stack.Screen name="examens/simulation" options={{ headerShown: false }} />
+      <Stack.Screen name="examens/planning" options={{ headerShown: false }} />
     </Stack>
   );
 }

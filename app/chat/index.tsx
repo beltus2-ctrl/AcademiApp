@@ -29,7 +29,6 @@ export default function ChatAccueil() {
   const router = useRouter();
   const [profil, setProfil] = useState<any>(null);
   const [nbProfsDisponibles, setNbProfsDisponibles] = useState(0);
-  const [nbMessagesNonLus, setNbMessagesNonLus] = useState(0);
   const [messageAccueil] = useState(
     MESSAGES_ACCUEIL[Math.floor(Math.random() * MESSAGES_ACCUEIL.length)]
   );
@@ -52,6 +51,7 @@ export default function ChatAccueil() {
     animerUrgence();
     tournerRotation();
     rotationTips();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animerEntree = () => {
@@ -106,7 +106,7 @@ export default function ChatAccueil() {
     try {
       const docSnap = await getDoc(doc(db, 'utilisateurs', utilisateur.uid));
       if (docSnap.exists()) setProfil(docSnap.data());
-    } catch (e) {}
+    } catch {}
   };
 
   const chargerProfsDisponibles = () => {

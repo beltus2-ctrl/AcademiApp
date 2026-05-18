@@ -81,6 +81,7 @@ export default function Quiz() {
         useNativeDriver: false,
       }).start();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionActuelle, questions]);
 
   const animerTransition = (callback: () => void) => {
@@ -130,7 +131,7 @@ export default function Quiz() {
       setReponses(new Array(data.questions.length).fill(-1));
       setQuestionActuelle(0);
       setEtape('quiz');
-    } catch (erreur) {
+    } catch {
       Alert.alert('🔌 Connexion impossible', 'Verifiez que le backend est lance.');
       setEtape('saisie');
     } finally {

@@ -26,7 +26,7 @@ export default function TableauProfesseur() {
     try {
       await signOut(auth);
       router.replace('/login');
-    } catch (erreur) {
+    } catch {
       Alert.alert('Erreur', 'Impossible de se déconnecter');
     }
   };
