@@ -20,6 +20,7 @@ import {
     Text, TextInput, TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth, db } from '../../firebaseConfig';
 import { API_URL } from '../../utils/config';
 import { verifierEtDecrementerQuota } from '../../utils/quota';
@@ -43,6 +44,8 @@ interface Professeur {
 
 export default function ChatProfesseur() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const bottomSafePadding = Math.max(insets.bottom + 8, 24);
   const [etape, setEtape] = useState<'choix' | 'chat'>('choix');
   const [professeurs, setProfesseurs] = useState<Professeur[]>([]);
   const [professeurChoisi, setProfesseurChoisi] = useState<Professeur | null>(null);
@@ -165,14 +168,18 @@ export default function ChatProfesseur() {
       collection(db, `chats/${chatId}/messages`),
       orderBy('timestamp', 'asc')
     );
-    onSnapshot(q, (snap) => {
-      const msgs: Message[] = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      } as Message));
-      setMessages(msgs);
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-    });
+    onSnapshot(
+      q,
+      (snap) => {
+        const msgs: Message[] = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        } as Message));
+        setMessages(msgs);
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      },
+      () => {}
+    );
 
     if (!prof.disponible) {
       await addDoc(collection(db, `chats/${chatId}/messages`), {
@@ -203,13 +210,17 @@ export default function ChatProfesseur() {
       collection(db, `chats/${chatId}/messages`),
       orderBy('timestamp', 'asc')
     );
-    onSnapshot(q, (snap) => {
-      const msgs: Message[] = snap.docs.map(d => ({
-        id: d.id, ...d.data()
-      } as Message));
-      setMessages(msgs);
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-    });
+    onSnapshot(
+      q,
+      (snap) => {
+        const msgs: Message[] = snap.docs.map(d => ({
+          id: d.id, ...d.data()
+        } as Message));
+        setMessages(msgs);
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      },
+      () => {}
+    );
 
     await addDoc(collection(db, `chats/${chatId}/messages`), {
       texte: 'Bonjour ! Je suis AcademiAI, votre assistant academique. Je suis disponible 24h/24 pour repondre a toutes vos questions ! Comment puis-je vous aider aujourd hui ? 🤖✨',
@@ -567,7 +578,7 @@ export default function ChatProfesseur() {
       )}
 
       {/* Zone saisie */}
-      <View style={styles.saisieContainer}>
+      <View style={[styles.saisieContainer, { paddingBottom: bottomSafePadding }]}>
         <View style={styles.saisieInterne}>
           <TextInput
             style={styles.champSaisie}

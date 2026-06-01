@@ -8,9 +8,9 @@ import {
   Text, TextInput, TouchableOpacity,
   View
 } from 'react-native';
-import { obtenirQuota, verifierEtDecrementerQuota } from '../../utils/quota';
-
 import { API_URL } from '../../utils/config';
+import { choisirImageDepuisGalerie, prendrePhotoAvecCamera } from '../../utils/imageToText';
+import { obtenirQuota, verifierEtDecrementerQuota } from '../../utils/quota';
 
 export default function Cours() {
   const router = useRouter();
@@ -23,6 +23,8 @@ export default function Cours() {
   const [mode, setMode] = useState('resumer');
   const [reponseOuverte, setReponseOuverte] = useState(true);
   const [quotaRestant, setQuotaRestant] = useState<number | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [modeAmeliorer, setModeAmeliorer] = useState<'texte' | 'image'>('texte');
 
   useEffect(() => {
     const chargerQuota = async () => {
@@ -135,6 +137,57 @@ export default function Cours() {
       setChargement(false);
     }
   };
+
+  const ameliorerNotesImage = async (base64: string) => {
+  const quota = await verifierEtDecrementerQuota();
+  if (!quota.autorise) {
+    Alert.alert('⚠️ Quota atteint', quota.message || 'Reessayez demain.');
+    return;
+  }
+  setQuotaRestant(quota.requetesRestantes);
+  setChargement(true);
+  setReponse('');
+  try {
+    const response = await fetch(`${API_URL}/ameliorer-notes-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64: base64 })
+    });
+    const data = await response.json();
+    if (response.status === 429) {
+      Alert.alert('⚠️ Quota journalier atteint', 'Revenez demain. 📅');
+      return;
+    }
+    if (!response.ok) {
+      Alert.alert('Erreur', data.erreur || 'Impossible d analyser l image.');
+      return;
+    }
+    if (data.reponse && data.reponse.length > 0) {
+      setReponse(data.reponse);
+      setReponseOuverte(true);
+    }
+  } catch (e) {
+    Alert.alert('🔌 Connexion impossible', 'Verifiez que le backend est lance.');
+  } finally {
+    setChargement(false);
+  }
+};
+
+const ouvrirCamera = async () => {
+  const base64 = await prendrePhotoAvecCamera();
+  if (base64) {
+    setImageBase64(base64);
+    await ameliorerNotesImage(base64);
+  }
+};
+
+const ouvrirGalerie = async () => {
+  const base64 = await choisirImageDepuisGalerie();
+  if (base64) {
+    setImageBase64(base64);
+    await ameliorerNotesImage(base64);
+  }
+};
 
   const nouvelleRecherche = () => {
     setReponse('');
@@ -263,31 +316,104 @@ export default function Cours() {
           </View>
         )}
 
-        {mode === 'ameliorer' && (
-          <View style={styles.formulaire}>
-            <Text style={styles.label}>📝 Vos notes brutes *</Text>
-            <TextInput
-              style={[styles.champ, styles.champMultiline]}
-              placeholder="Collez ou tapez vos notes ici..."
-              placeholderTextColor="#4A6080"
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={8}
-              textAlignVertical="top"
-            />
-            <TouchableOpacity
-              style={[styles.bouton, chargement && styles.boutonDesactive]}
-              onPress={ameliorerNotes}
-              disabled={chargement}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.texteBouton}>
-                {chargement ? '⏳ Analyse en cours...' : '✨ Ameliorer mes notes'}
-              </Text>
-            </TouchableOpacity>
+    {mode === 'ameliorer' && (
+  <View style={styles.formulaire}>
+
+    {/* Sélecteur mode texte/image */}
+    <View style={styles.modesContainer}>
+      <TouchableOpacity
+        style={[styles.modeBtn, modeAmeliorer === 'texte' && styles.modeBtnActif]}
+        onPress={() => setModeAmeliorer('texte')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.modeEmoji}>✍️</Text>
+        <Text style={[styles.modeTexte, modeAmeliorer === 'texte' && styles.modeTexteActif]}>
+          Saisir texte
+        </Text>
+        {modeAmeliorer === 'texte' && <View style={styles.modeBadge} />}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.modeBtn, modeAmeliorer === 'image' && styles.modeBtnActif]}
+        onPress={() => setModeAmeliorer('image')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.modeEmoji}>📸</Text>
+        <Text style={[styles.modeTexte, modeAmeliorer === 'image' && styles.modeTexteActif]}>
+          Scanner notes
+        </Text>
+        {modeAmeliorer === 'image' && <View style={styles.modeBadge} />}
+      </TouchableOpacity>
+    </View>
+
+    {modeAmeliorer === 'texte' ? (
+      <>
+        <Text style={styles.label}>📝 Vos notes brutes *</Text>
+        <TextInput
+          style={[styles.champ, styles.champMultiline]}
+          placeholder="Collez ou tapez vos notes ici..."
+          placeholderTextColor="#4A6080"
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          numberOfLines={8}
+          textAlignVertical="top"
+        />
+        <TouchableOpacity
+          style={[styles.bouton, chargement && styles.boutonDesactive]}
+          onPress={ameliorerNotes}
+          disabled={chargement}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.texteBouton}>
+            {chargement ? '⏳ Analyse en cours...' : '✨ Ameliorer mes notes'}
+          </Text>
+        </TouchableOpacity>
+      </>
+    ) : (
+      <>
+        <View style={styles.scanBanniere}>
+          <Text style={styles.scanBanniereEmoji}>📸</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.scanBanniereTitre}>Scanner vos notes</Text>
+            <Text style={styles.scanBanniereTexte}>
+              Prenez une photo de vos notes manuscrites ou importez depuis la galerie — AcademiAI les analyse !
+            </Text>
           </View>
-        )}
+        </View>
+
+        <View style={styles.scanBoutons}>
+          <TouchableOpacity
+            style={[styles.scanBouton, { borderColor: 'rgba(74,144,217,0.5)' }]}
+            onPress={ouvrirCamera}
+            disabled={chargement}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.scanBoutonEmoji}>📷</Text>
+            <Text style={styles.scanBoutonTexte}>Prendre une photo</Text>
+            <Text style={styles.scanBoutonSous}>Ouvrir la camera</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.scanBouton, { borderColor: 'rgba(171,71,188,0.5)' }]}
+            onPress={ouvrirGalerie}
+            disabled={chargement}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.scanBoutonEmoji}>🖼️</Text>
+            <Text style={styles.scanBoutonTexte}>Depuis la galerie</Text>
+            <Text style={styles.scanBoutonSous}>Choisir une image</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.scanInfo}>
+          <Text style={styles.scanInfoTexte}>
+            💡 Pour de meilleurs resultats : bonne luminosite, notes bien cadrees, ecriture lisible
+          </Text>
+        </View>
+      </>
+    )}
+  </View>
+)}
 
         {chargement && (
           <View style={styles.chargementContainer}>
@@ -337,6 +463,17 @@ export default function Cours() {
 }
 
 const styles = StyleSheet.create({
+  scanBanniere: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(74,144,217,0.1)', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(74,144,217,0.25)', gap: 12 },
+  scanBanniereEmoji: { fontSize: 32 },
+  scanBanniereTitre: { color: '#4A90D9', fontSize: 14, fontWeight: '700', marginBottom: 3 },
+  scanBanniereTexte: { color: '#A8C0DC', fontSize: 12, lineHeight: 18 },
+  scanBoutons: { flexDirection: 'row', gap: 12, marginBottom: 14 },
+  scanBouton: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, alignItems: 'center', borderWidth: 1.5, gap: 6 },
+  scanBoutonEmoji: { fontSize: 32 },
+  scanBoutonTexte: { color: '#FFFFFF', fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  scanBoutonSous: { color: '#8BA4C4', fontSize: 11, textAlign: 'center' },
+  scanInfo: { backgroundColor: 'rgba(255,193,7,0.08)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,193,7,0.2)' },
+  scanInfoTexte: { color: '#A8C0DC', fontSize: 12, fontStyle: 'italic', textAlign: 'center' },
   scroll: { flexGrow: 1, paddingBottom: 60 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 50, paddingBottom: 20 },
   retourBtn: { width: 70, paddingVertical: 6 },

@@ -115,7 +115,7 @@ export default function ChatAccueil() {
       where('role', '==', 'professeur'),
       where('disponible', '==', true)
     );
-    const unsub = onSnapshot(q, snap => setNbProfsDisponibles(snap.size));
+    const unsub = onSnapshot(q, snap => setNbProfsDisponibles(snap.size), () => {});
     return unsub;
   };
 

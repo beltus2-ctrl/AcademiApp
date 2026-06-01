@@ -17,6 +17,7 @@ import {
     Text, TextInput, TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth, db } from '../../firebaseConfig';
 
 interface Message {
@@ -37,6 +38,8 @@ const MESSAGES_BIENVENUE = [
 
 export default function ChatCommunautaire() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const bottomSafePadding = Math.max(insets.bottom + 8, 24);
   const [messages, setMessages] = useState<Message[]>([]);
   const [nouveauMessage, setNouveauMessage] = useState('');
   const [profil, setProfil] = useState<any>(null);
@@ -87,15 +90,21 @@ export default function ChatCommunautaire() {
       collection(db, 'chats/communautaire/messages'),
       orderBy('timestamp', 'asc')
     );
-    return onSnapshot(q, (snap) => {
-      const msgs: Message[] = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      } as Message));
-      setMessages(msgs);
-      setChargement(false);
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-    });
+    return onSnapshot(
+      q,
+      (snap) => {
+        const msgs: Message[] = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        } as Message));
+        setMessages(msgs);
+        setChargement(false);
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      },
+      () => {
+        setChargement(false);
+      }
+    );
   };
 
   const envoyerMessage = async () => {
@@ -261,7 +270,7 @@ export default function ChatCommunautaire() {
       )}
 
       {/* Zone de saisie */}
-      <Animated.View style={[styles.saisieContainer, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.saisieContainer, { opacity: fadeAnim, paddingBottom: bottomSafePadding }]}>
         <View style={styles.saisieInterne}>
           <TextInput
             style={styles.champSaisie}
