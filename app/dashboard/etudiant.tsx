@@ -44,6 +44,14 @@ const HAUTEUR_CARTE = Math.max(168, Math.min(210, Math.round(height * 0.2)));
 const URL_MUSIQUE = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
 const cartes: CarteDashboard[] = [
+  { 
+    icone: '🤖', 
+    label: 'AcademiAI', 
+    route: '/ia', 
+    code: 'TUTOR_AI',
+    description: 'Tuteur IA, analyse de progression et badges', 
+    accent: '#350ad1', 
+  },
   {
     icone: '📸',
     label: 'Cours',

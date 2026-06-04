@@ -94,12 +94,12 @@ const cartes: CarteProfesseur[] = [
   },
   {
     icone: '📊',
-    label: 'Progression',
+    label: 'Progression etudiant',
     code: 'STUDENT_TRACE',
-    description: 'Suivi academique et progression globale',
+    description: 'Analyser les stats et recevez des recommendations IA',
     accent: '#FFC107',
     indicateur: 'SYNC',
-    route: '/chat/professeur',
+    route: '/prof/progression-eleves',
   },
 ];
 

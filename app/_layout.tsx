@@ -39,6 +39,11 @@ export default function RootLayout() {
         <Stack.Screen name="prof/chat-room" options={{ headerShown: false }} />
         <Stack.Screen name="prof/salon-corrections" options={{ headerShown: false }} />
         <Stack.Screen name="corrections/index" options={{ headerShown: false }} />
+        <Stack.Screen name="ia/index" options={{ headerShown: false }} />
+        <Stack.Screen name="ia/tuteur" options={{ headerShown: false }} />
+        <Stack.Screen name="ia/progression" options={{ headerShown: false }} />
+        <Stack.Screen name="badges/index" options={{ headerShown: false }} />
+        <Stack.Screen name="prof/progression-eleves" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>
   );
