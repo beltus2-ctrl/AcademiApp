@@ -2,11 +2,11 @@ import { useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useRef, useState } from 'react';
 import {
-    Animated, Easing,
-    ScrollView,
-    StyleSheet,
-    Text, TouchableOpacity,
-    View
+  Animated, Easing,
+  ScrollView,
+  StyleSheet,
+  Text, TouchableOpacity,
+  View
 } from 'react-native';
 import { auth, db } from '../../firebaseConfig';
 
