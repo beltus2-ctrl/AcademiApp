@@ -247,7 +247,11 @@ export default function IAHub() {
 
       {/* Recommandations */}
       <Animated.View style={cardStyle(cardsAnim[3])}>
-        <View style={[styles.toolCard, styles.toolViolet]}>
+        <TouchableOpacity
+          style={[styles.toolCard, styles.toolViolet]}
+          onPress={() => router.push('/ia/recommandations' as any)}
+          activeOpacity={0.75}
+        >
           <View style={styles.toolCardTop}>
             <View style={[styles.toolIcone, { backgroundColor: 'rgba(171,71,188,0.2)' }]}>
               <Text style={styles.toolEmoji}>🎯</Text>
@@ -269,7 +273,7 @@ export default function IAHub() {
               </Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </Animated.View>
 
     </ScrollView>
