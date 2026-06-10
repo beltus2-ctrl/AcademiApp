@@ -1,12 +1,16 @@
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import {
     addDoc,
     collection,
-    doc, getDoc,
+    deleteDoc,
+    doc, getDoc, getDocs,
     onSnapshot,
     orderBy,
     query,
-    serverTimestamp
+    serverTimestamp,
+    writeBatch
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -27,7 +31,7 @@ interface Message {
   auteurId: string;
   role: string;
   timestamp: any;
-  type: 'texte' | 'fichier' | 'systeme';
+  type: 'texte' | 'fichier' | 'systeme' | 'image' | 'document';
 }
 
 const MESSAGES_BIENVENUE = [
@@ -98,6 +102,7 @@ export default function ChatCommunautaire() {
           ...d.data()
         } as Message));
         setMessages(msgs);
+        verifierEtViderChat(msgs);
         setChargement(false);
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
       },
@@ -105,6 +110,47 @@ export default function ChatCommunautaire() {
         setChargement(false);
       }
     );
+  };
+
+  const envoyerPhoto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.6, base64: false
+    });
+    if (!result.canceled) {
+      await addDoc(collection(db, 'chats/communautaire/messages'), {
+        texte: '📷 Photo partagee',
+        imageUri: result.assets[0].uri,
+        auteur: profil?.nom, auteurId: auth.currentUser?.uid,
+        role: profil?.role, timestamp: serverTimestamp(), type: 'image'
+      });
+    }
+  };
+
+  const envoyerFichier = async () => {
+    const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+    if (!result.canceled) {
+      await addDoc(collection(db, 'chats/communautaire/messages'), {
+        texte: `📎 ${result.assets[0].name}`,
+        auteur: profil?.nom, auteurId: auth.currentUser?.uid,
+        role: profil?.role, timestamp: serverTimestamp(), type: 'document',
+        documentNom: result.assets[0].name
+      });
+    }
+  };
+
+  const verifierEtViderChat = async (msgs: any[]) => {
+    if (msgs.length >= 1000) {
+      const batch = writeBatch(db);
+      const snap = await getDocs(query(collection(db, 'chats/communautaire/messages'), orderBy('timestamp', 'asc')));
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      await addDoc(collection(db, 'chats/communautaire/messages'), {
+        texte: '🔄 Le chat a ete automatiquement vide apres 1000 messages.',
+        auteur: 'Systeme', auteurId: 'systeme',
+        role: 'systeme', timestamp: serverTimestamp(), type: 'systeme'
+      });
+    }
   };
 
   const envoyerMessage = async () => {
@@ -158,6 +204,17 @@ export default function ChatCommunautaire() {
       return (
         <View style={styles.messageSysteme}>
           <Text style={styles.messageSystemeTexte}>⚡ {item.texte}</Text>
+        </View>
+      );
+    }
+
+    if (item.type === 'image') {
+      return (
+        <View style={[styles.messageWrapper, item.auteurId === auth.currentUser?.uid ? styles.messageWrapperDroite : styles.messageWrapperGauche]}>
+          <View style={[styles.messageBulleInterne, item.auteurId === auth.currentUser?.uid ? styles.messageBulleMoi : styles.messageBulleAutre]}>
+            <Text style={{fontSize:13,color:'#E8F0FE'}}>📷 Photo partagee</Text>
+            <Text style={{fontSize:10,color:'rgba(255,255,255,0.5)',marginTop:2}}>{formaterHeure(item.timestamp)}</Text>
+          </View>
         </View>
       );
     }
@@ -272,6 +329,12 @@ export default function ChatCommunautaire() {
       {/* Zone de saisie */}
       <Animated.View style={[styles.saisieContainer, { opacity: fadeAnim, paddingBottom: bottomSafePadding }]}>
         <View style={styles.saisieInterne}>
+          <TouchableOpacity onPress={envoyerPhoto} style={{padding:8}}>
+            <Text style={{fontSize:20}}>🖼️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={envoyerFichier} style={{padding:8}}>
+            <Text style={{fontSize:20}}>📎</Text>
+          </TouchableOpacity>
           <TextInput
             style={styles.champSaisie}
             placeholder="Ecrivez votre message..."
