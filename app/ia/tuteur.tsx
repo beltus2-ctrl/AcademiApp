@@ -1,3 +1,5 @@
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useRef, useState } from 'react';
@@ -151,6 +153,23 @@ Encourage l etudiant, sois chaleureux et motivant.
 Si tu donnes des exercices, adapte-les a son niveau.
 Maximum 400 mots par reponse sauf si l etudiant demande plus de details.
     `.trim();
+  };
+
+  const envoyerPhoto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true, quality: 0.7
+    });
+    if (!result.canceled && result.assets[0].base64) {
+      await envoyerMessage(`[Photo jointe]\n${result.assets[0].fileName || 'image.jpg'}`);
+    }
+  };
+
+  const envoyerDocument = async () => {
+    const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+    if (!result.canceled) {
+      await envoyerMessage(`[Document joint : ${result.assets[0].name}]`);
+    }
   };
 
   const envoyerMessage = async (texteManuel?: string) => {
@@ -337,6 +356,12 @@ Maximum 400 mots par reponse sauf si l etudiant demande plus de details.
       {/* Zone saisie */}
       <View style={styles.saisieContainer}>
         <View style={[styles.saisieWrapper, saisiFocus && styles.saisieWrapperFocus]}>
+          <TouchableOpacity onPress={envoyerPhoto} style={{padding:8}}>
+            <Text style={{fontSize:22}}>🖼️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={envoyerDocument} style={{padding:8}}>
+            <Text style={{fontSize:22}}>📎</Text>
+          </TouchableOpacity>
           <TextInput
             style={styles.champSaisie}
             placeholder="Posez votre question au tuteur..."
