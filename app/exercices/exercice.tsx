@@ -533,7 +533,7 @@ export default function ExerciceDetail() {
               >
                 <Text style={styles.texteBouton}>
                   {exerciceActuel < exercices.length - 1
-                    ? `Exercice suivant → (${exerciceActuel + 2}/${exercices.length})`
+                    ? `Exercice suivant (${exerciceActuel + 2}/${exercices.length})`
                     : '🏁 Voir mes resultats finaux'}
                 </Text>
               </TouchableOpacity>

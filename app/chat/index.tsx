@@ -212,7 +212,6 @@ export default function ChatAccueil() {
           </View>
           <View style={styles.cardFooter}>
             <Text style={styles.cardFooterTexte}>Rejoindre la communaute</Text>
-            <Text style={styles.cardFooterFleche}>→</Text>
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -253,7 +252,6 @@ export default function ChatAccueil() {
           </View>
           <View style={[styles.cardFooter, { borderTopColor: 'rgba(255,193,7,0.2)' }]}>
             <Text style={[styles.cardFooterTexte, { color: '#FFC107' }]}>Contacter un professeur</Text>
-            <Text style={[styles.cardFooterFleche, { color: '#FFC107' }]}>→</Text>
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -280,7 +278,6 @@ export default function ChatAccueil() {
             <Animated.View style={[styles.urgenceBadge, { transform: [{ scale: urgenceAnim }] }]}>
               <Text style={styles.urgenceBadgeTexte}>🚨 URGENT</Text>
             </Animated.View>
-            <Text style={styles.urgenceFleche}>→</Text>
           </View>
         </TouchableOpacity>
       </Animated.View>

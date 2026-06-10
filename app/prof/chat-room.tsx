@@ -499,7 +499,6 @@ export default function ProfChatRoom() {
                   <Text style={styles.modalOptionTitre}>Modifier le titre</Text>
                   <Text style={styles.modalOptionSous}>Changer le nom de ce groupe</Text>
                 </View>
-                <Text style={styles.modalOptionFleche}>→</Text>
               </TouchableOpacity>
             )}
 
@@ -515,7 +514,6 @@ export default function ProfChatRoom() {
                 <Text style={styles.modalOptionTitre}>Gerer les participants</Text>
                 <Text style={styles.modalOptionSous}>Voir et exclure des participants</Text>
               </View>
-              <Text style={styles.modalOptionFleche}>→</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.modalOption, styles.modalOptionDanger]} onPress={fermerChat}>
@@ -524,7 +522,6 @@ export default function ProfChatRoom() {
                 <Text style={[styles.modalOptionTitre, { color: '#FF5252' }]}>Fermer le chat</Text>
                 <Text style={styles.modalOptionSous}>Aucun message ne pourra plus etre envoye</Text>
               </View>
-              <Text style={[styles.modalOptionFleche, { color: '#FF5252' }]}>→</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.modalAnnuler} onPress={fermerModal}>

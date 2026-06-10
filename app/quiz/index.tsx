@@ -395,7 +395,7 @@ export default function Quiz() {
         activeOpacity={0.8}
       >
         <Text style={styles.texteBouton}>
-          {questionActuelle < questions.length - 1 ? 'Question suivante →' : '✅ Terminer le quiz'}
+          {questionActuelle < questions.length - 1 ? 'Question suivante' : '✅ Terminer le quiz'}
         </Text>
       </TouchableOpacity>
 

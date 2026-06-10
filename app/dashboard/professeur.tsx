@@ -1,4 +1,3 @@
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
@@ -56,7 +55,6 @@ const GRILLE = Array.from({ length: 8 }, (_, i) => i);
 const FORMES_PARTICULES = ['●', '◆', '▲', '★', '⬡'];
 const COULEURS_PARTICULES = ['#4A90D9', '#4CAF50', '#FFC107', '#AB47BC', '#FF7043'];
 const HAUTEUR_CARTE = Math.max(168, Math.min(210, Math.round(height * 0.2)));
-const URL_MUSIQUE = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 const MESSAGES_MOTIVATION = [
   'Vous faites une difference dans la vie de vos etudiants ! 🌟',
   'Un bon professeur change le destin ! 🎓',
@@ -126,7 +124,6 @@ export default function TableauProfesseur() {
   const telemetryAnim = useRef(new Animated.Value(0)).current;
   const appelPulseAnim = useRef(new Animated.Value(1)).current;
   const cardScales = useRef(cartes.map(() => new Animated.Value(1))).current;
-  const sonRef = useRef<AudioPlayer | null>(null);
   const animationsRef = useRef<Animated.CompositeAnimation[]>([]);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const actifRef = useRef(true);
@@ -159,14 +156,11 @@ export default function TableauProfesseur() {
     animerScan();
     animerGlow();
     animerTelemetrie();
-    chargerMusique();
 
     return () => {
       actifRef.current = false;
       timeouts.forEach(clearTimeout);
       animations.forEach(animation => animation.stop());
-      sonRef.current?.pause();
-      sonRef.current?.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -337,17 +331,6 @@ export default function TableauProfesseur() {
     );
   };
 
-  const chargerMusique = async () => {
-    try {
-      await setAudioModeAsync({ playsInSilentMode: true });
-      const sound = createAudioPlayer({ uri: URL_MUSIQUE }, { downloadFirst: true });
-      sound.loop = true;
-      sound.volume = 0.15;
-      sound.play();
-      sonRef.current = sound;
-    } catch {}
-  };
-
   const indicateurCarte = (carte: CarteProfesseur) => {
     if (carte.code === 'CALL_RADAR') return `${appels.length} WAIT`;
     if (carte.code === 'STUDENT_TRACE') return `${stats.total} STD`;
@@ -377,7 +360,6 @@ export default function TableauProfesseur() {
 
   const confirmerDeconnexion = async () => {
     try {
-      sonRef.current?.pause();
       await toggleDisponibilite(false);
       await signOut(auth);
       router.replace('/login');

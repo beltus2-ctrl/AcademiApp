@@ -312,7 +312,6 @@ export default function ExamensAccueil() {
               </View>
             </View>
           </View>
-          <Text style={[styles.optionFleche, { color: '#4A90D9' }]}>→</Text>
         </TouchableOpacity>
       </Animated.View>
 
@@ -340,7 +339,6 @@ export default function ExamensAccueil() {
               </View>
             </View>
           </View>
-          <Text style={[styles.optionFleche, { color: '#FFC107' }]}>→</Text>
         </TouchableOpacity>
       </Animated.View>
 
@@ -368,7 +366,6 @@ export default function ExamensAccueil() {
               </View>
             </View>
           </View>
-          <Text style={[styles.optionFleche, { color: '#AB47BC' }]}>→</Text>
         </TouchableOpacity>
       </Animated.View>
 
@@ -396,7 +393,6 @@ export default function ExamensAccueil() {
               </View>
             </View>
           </View>
-          <Text style={[styles.optionFleche, { color: '#4CAF50' }]}>→</Text>
         </TouchableOpacity>
       </Animated.View>
 

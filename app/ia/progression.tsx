@@ -321,7 +321,7 @@ export default function Progression() {
           activeOpacity={0.8}
         >
           <Text style={styles.analyseBoutonTexte}>
-            💬 Discuter avec le Tuteur IA →
+            💬 Discuter avec le Tuteur IA
           </Text>
         </TouchableOpacity>
       </View>

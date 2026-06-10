@@ -373,7 +373,6 @@ export default function ProfChats() {
                 {chat.dernierMessage}
               </Text>
             </View>
-            <Text style={styles.chatFleche}>→</Text>
           </TouchableOpacity>
         ))
       )}

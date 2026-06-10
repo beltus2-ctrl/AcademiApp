@@ -347,7 +347,7 @@ export default function SalonCorrections() {
   const partagerLienSalon = async () => {
     if (!salon) return;
     animerCode();
-    const message = `🎓 *Salon de Corrections AcademiApp*\n\n📚 *${salon.titre}*\n👨‍🏫 Professeur : ${profil?.nom}\n\n🔑 *Code d acces : ${salon.code}*\n\n📱 Ouvrez AcademiApp → Corrections → Entrez le code *${salon.code}* pour acceder aux corrections et notes.\n\n_Partage via AcademiApp IUT Douala_`;
+    const message = `🎓 *Salon de Corrections AcademiApp*\n\n📚 *${salon.titre}*\n👨‍🏫 Professeur : ${profil?.nom}\n\n🔑 *Code d acces : ${salon.code}*\n\n📱 Ouvrez AcademiApp, puis Corrections, puis entrez le code *${salon.code}* pour acceder aux corrections et notes.\n\n_Partage via AcademiApp IUT Douala_`;
     try {
       await Share.share({ message, title: `Salon ${salon.code}` });
     } catch (e) {}

@@ -359,9 +359,9 @@ export default function Exercices() {
                   )}
                 </View>
 
-                <Text style={[styles.niveauFleche, { color: estDebloque ? niveau.couleur : '#4A6080' }]}>
-                  {estDebloque ? '→' : '🔒'}
-                </Text>
+                {!estDebloque && (
+                  <Text style={[styles.niveauFleche, { color: '#4A6080' }]}>🔒</Text>
+                )}
               </View>
 
               {/* Barre de progression du niveau */}

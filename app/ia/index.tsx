@@ -190,7 +190,6 @@ export default function IAHub() {
             <View style={styles.toolTag}>
               <Text style={styles.toolTagTexte}>💬 Conversationnel</Text>
             </View>
-            <Text style={styles.toolFleche}>→</Text>
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -218,7 +217,6 @@ export default function IAHub() {
             <View style={[styles.toolTag, { backgroundColor: 'rgba(76,175,80,0.2)' }]}>
               <Text style={[styles.toolTagTexte, { color: '#4CAF50' }]}>🎯 Insights</Text>
             </View>
-            <Text style={[styles.toolFleche, { color: '#4CAF50' }]}>→</Text>
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -243,7 +241,6 @@ export default function IAHub() {
             <View style={[styles.toolTag, { backgroundColor: 'rgba(255,193,7,0.2)' }]}>
               <Text style={[styles.toolTagTexte, { color: '#FFC107' }]}>🌟 Achievements</Text>
             </View>
-            <Text style={[styles.toolFleche, { color: '#FFC107' }]}>→</Text>
           </View>
         </TouchableOpacity>
       </Animated.View>

@@ -1,4 +1,3 @@
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
@@ -59,7 +58,6 @@ const PARTICULES = Array.from({ length: 20 }, (_, i) => i);
 const GRILLE = Array.from({ length: 8 }, (_, i) => i);
 const FORMES_PARTICULES = ['●', '◆', '▲', '★', '⬡'];
 const COULEURS_PARTICULES = ['#4A90D9', '#4CAF50', '#FFC107', '#AB47BC', '#FF7043'];
-const URL_MUSIQUE = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 const HAUTEUR_CARTE = Math.max(168, Math.min(210, Math.round(height * 0.2)));
 const cartes: CarteAdmin[] = [
   {
@@ -119,7 +117,6 @@ export default function TableauAdmin() {
   const glowAnim = useRef(new Animated.Value(0)).current;
   const telemetryAnim = useRef(new Animated.Value(0)).current;
   const cardScales = useRef(cartes.map(() => new Animated.Value(1))).current;
-  const sonRef = useRef<AudioPlayer | null>(null);
   const animationsRef = useRef<Animated.CompositeAnimation[]>([]);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const actifRef = useRef(true);
@@ -152,14 +149,11 @@ export default function TableauAdmin() {
     animerScan();
     animerGlow();
     animerTelemetrie();
-    chargerMusique();
 
     return () => {
       actifRef.current = false;
       timeouts.forEach(clearTimeout);
       animations.forEach(animation => animation.stop());
-      sonRef.current?.pause();
-      sonRef.current?.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -397,17 +391,6 @@ export default function TableauAdmin() {
     );
   };
 
-  const chargerMusique = async () => {
-    try {
-      await setAudioModeAsync({ playsInSilentMode: true });
-      const sound = createAudioPlayer({ uri: URL_MUSIQUE }, { downloadFirst: true });
-      sound.loop = true;
-      sound.volume = 0.15;
-      sound.play();
-      sonRef.current = sound;
-    } catch {}
-  };
-
   const presserCarte = (index: number) => {
     Animated.sequence([
       Animated.timing(cardScales[index], { toValue: 0.96, duration: 70, useNativeDriver: true }),
@@ -423,7 +406,6 @@ export default function TableauAdmin() {
         style: 'destructive',
         onPress: async () => {
           try {
-            sonRef.current?.pause();
             await signOut(auth);
             router.replace('/login');
           } catch {
