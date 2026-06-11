@@ -1,4 +1,6 @@
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import {
     addDoc,
     collection,
@@ -8,7 +10,8 @@ import {
     orderBy,
     query,
     serverTimestamp,
-    where
+    where,
+    writeBatch
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -32,7 +35,9 @@ interface Message {
   auteurId: string;
   role: string;
   timestamp: any;
-  type: 'texte' | 'ia' | 'systeme';
+  type: 'texte' | 'ia' | 'systeme' | 'image' | 'document';
+  imageUri?: string;
+  documentNom?: string;
 }
 
 interface Professeur {
@@ -230,6 +235,46 @@ export default function ChatProfesseur() {
       timestamp: serverTimestamp(),
       type: 'ia',
     });
+  };
+
+  const envoyerPhotoChat = async (chatId: string) => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.6
+    });
+    if (!result.canceled) {
+      await addDoc(collection(db, `chats/${chatId}/messages`), {
+        texte: '📷 Photo partagee',
+        imageUri: result.assets[0].uri,
+        auteur: profil?.nom, auteurId: auth.currentUser?.uid,
+        role: profil?.role, timestamp: serverTimestamp(), type: 'image'
+      });
+    }
+  };
+
+  const envoyerFichierChat = async (chatId: string) => {
+    const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+    if (!result.canceled) {
+      await addDoc(collection(db, `chats/${chatId}/messages`), {
+        texte: `📎 ${result.assets[0].name}`,
+        auteur: profil?.nom, auteurId: auth.currentUser?.uid,
+        role: profil?.role, timestamp: serverTimestamp(), type: 'document',
+        documentNom: result.assets[0].name
+      });
+    }
+  };
+
+  const verifierEtViderChatProf = async (chatId: string, msgs: any[]) => {
+    if (msgs.length >= 1000) {
+      const batch = writeBatch(db);
+      const snap = await getDocs(query(collection(db, `chats/${chatId}/messages`), orderBy('timestamp', 'asc')));
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      await addDoc(collection(db, `chats/${chatId}/messages`), {
+        texte: '🔄 Chat vide automatiquement apres 1000 messages.',
+        auteur: 'Systeme', auteurId: 'systeme',
+        role: 'systeme', timestamp: serverTimestamp(), type: 'systeme'
+      });
+    }
   };
 
   const envoyerMessage = async () => {
@@ -500,7 +545,7 @@ export default function ChatProfesseur() {
 
         {professeurs.length === 0 && !chargement && (
           <View style={styles.videContainer}>
-            <Text style={styles.videEmoji}>👨‍🏫</Text>
+            <Text style={styles.videEmoji}>👨‍���</Text>
             <Text style={styles.videTitre}>Aucun professeur enregistre</Text>
             <Text style={styles.videTexte}>
               AcademiAI est disponible pour vous aider en attendant ! 🤖
@@ -580,6 +625,12 @@ export default function ChatProfesseur() {
       {/* Zone saisie */}
       <View style={[styles.saisieContainer, { paddingBottom: bottomSafePadding }]}>
         <View style={styles.saisieInterne}>
+          <TouchableOpacity onPress={() => envoyerPhotoChat(modeIA && !professeurChoisi ? `${auth.currentUser?.uid}_ia_direct` : `${auth.currentUser?.uid}_${professeurChoisi?.id}`)} style={{padding:8}}>
+            <Text style={{fontSize:20}}>🖼️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => envoyerFichierChat(modeIA && !professeurChoisi ? `${auth.currentUser?.uid}_ia_direct` : `${auth.currentUser?.uid}_${professeurChoisi?.id}`)} style={{padding:8}}>
+            <Text style={{fontSize:20}}>📎</Text>
+          </TouchableOpacity>
           <TextInput
             style={styles.champSaisie}
             placeholder={modeIA ? 'Posez votre question a AcademiAI...' : 'Ecrivez votre message...'}
@@ -619,18 +670,18 @@ const styles = StyleSheet.create({
   retourBtn: { width: 70 },
   retourTexte: { color: '#4A90D9', fontSize: 14, fontWeight: '600' },
   headerTitre: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
-  banniere: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,193,7,0.1)', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,193,7,0.25)', gap: 12 },
+  banniere: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,193,7,0.1)', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,193,7,0.2)' },
   banniereEmoji: { fontSize: 32 },
   banniereTitre: { fontSize: 15, fontWeight: 'bold', color: '#FFC107', marginBottom: 3 },
   banniereTexte: { fontSize: 12, color: '#A8C0DC' },
-  boutonAppel: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,82,82,0.12)', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1.5, borderColor: 'rgba(255,82,82,0.4)', gap: 12 },
+  boutonAppel: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,82,82,0.12)', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1.5, borderColor: 'rgba(255,82,82,0.3)' },
   boutonAppelEnvoye: { backgroundColor: 'rgba(76,175,80,0.12)', borderColor: 'rgba(76,175,80,0.4)' },
   boutonAppelIcone: { fontSize: 28 },
   boutonAppelTitre: { color: '#FF5252', fontSize: 15, fontWeight: '800', marginBottom: 3 },
   boutonAppelTexte: { color: '#A8C0DC', fontSize: 12 },
   urgenceBadge: { backgroundColor: '#FF5252', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
   urgenceBadgeTexte: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
-  boutonIA: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(74,144,217,0.1)', borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(74,144,217,0.3)', gap: 12 },
+  boutonIA: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(74,144,217,0.1)', borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(74,144,217,0.25)' },
   boutonIAIcone: { fontSize: 28 },
   boutonIATitre: { color: '#4A90D9', fontSize: 15, fontWeight: '800', marginBottom: 3 },
   boutonIATexte: { color: '#A8C0DC', fontSize: 12 },
@@ -638,7 +689,7 @@ const styles = StyleSheet.create({
   pointVertPetit: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4CAF50' },
   dispoBadgeTexte: { color: '#4CAF50', fontSize: 10, fontWeight: '700' },
   sectionTitre: { color: '#8BA4C4', fontSize: 12, fontWeight: '700', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 },
-  profCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 12 },
+  profCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   profCardIndisponible: { opacity: 0.5 },
   profAvatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(255,193,7,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,193,7,0.4)' },
   profAvatarTexte: { color: '#FFC107', fontSize: 14, fontWeight: '800' },
@@ -654,7 +705,7 @@ const styles = StyleSheet.create({
   videTexte: { color: '#8BA4C4', fontSize: 13, textAlign: 'center' },
   boutonIAVide: { backgroundColor: '#4A90D9', borderRadius: 12, paddingHorizontal: 20, paddingVertical: 12, marginTop: 8 },
   boutonIAVideTexte: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 14 },
-  chatHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 50, paddingHorizontal: 24, paddingBottom: 12, backgroundColor: '#0F2044', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  chatHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 50, paddingHorizontal: 24, paddingBottom: 12, backgroundColor: '#0F2044', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)' },
   chatHeaderCentre: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   chatAvatarSmall: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(74,144,217,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(74,144,217,0.4)' },
   chatAvatarSmallTexte: { fontSize: 16 },
@@ -683,7 +734,7 @@ const styles = StyleSheet.create({
   iaEntrainTexte: { color: '#4A90D9', fontSize: 12, fontStyle: 'italic' },
   saisieContainer: { backgroundColor: '#0F2044', paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)' },
   saisieInterne: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  champSaisie: { flex: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10, color: '#FFFFFF', fontSize: 14, maxHeight: 100, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  champSaisie: { flex: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10, color: '#FFFFFF', fontSize: 14, maxHeight: 100, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
   boutonEnvoyer: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#4A90D9', alignItems: 'center', justifyContent: 'center', elevation: 4 },
   boutonEnvoyerDesactive: { backgroundColor: 'rgba(74,144,217,0.3)', elevation: 0 },
   boutonEnvoyerIA: { backgroundColor: '#1565C0' },
