@@ -222,7 +222,29 @@ export default function Planning() {
           </View>
           <View style={styles.planningDivider} />
           <ScrollView style={styles.planningScroll} nestedScrollEnabled showsVerticalScrollIndicator>
-            <Text style={styles.planningTexte}>{planning}</Text>
+            {planning.split('\n').filter(l => l.trim()).map((ligne, i) => {
+              const isHeader = ligne.startsWith('##') || ligne.startsWith('#');
+              const isDay = ligne.toLowerCase().includes('lundi') || ligne.toLowerCase().includes('mardi') || ligne.toLowerCase().includes('mercredi') || ligne.toLowerCase().includes('jeudi') || ligne.toLowerCase().includes('vendredi') || ligne.toLowerCase().includes('samedi') || ligne.toLowerCase().includes('dimanche');
+              const isBullet = ligne.trim().startsWith('-') || ligne.trim().startsWith('•');
+              return (
+                <View key={i} style={{
+                  backgroundColor: isHeader ? 'rgba(74,144,217,0.15)' : isDay ? 'rgba(76,175,80,0.08)' : isBullet ? 'rgba(255,255,255,0.03)' : 'transparent',
+                  borderLeftWidth: isDay ? 3 : isHeader ? 3 : 0,
+                  borderLeftColor: isDay ? '#4CAF50' : '#4A90D9',
+                  borderRadius: 6, padding: isHeader || isDay ? 10 : 6,
+                  marginBottom: isHeader ? 8 : 3
+                }}>
+                  <Text style={{
+                    color: isHeader ? '#4A90D9' : isDay ? '#4CAF50' : '#C8D8EE',
+                    fontSize: isHeader ? 15 : 13,
+                    fontWeight: isHeader || isDay ? '700' : '400',
+                    lineHeight: 20
+                  }}>
+                    {ligne.replace(/^#+\s*/, '').replace(/^\*\*|\*\*$/g, '')}
+                  </Text>
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -398,7 +420,7 @@ const styles = StyleSheet.create({
   retourBtn: { width: 70 },
   retourTexte: { color: '#4A90D9', fontSize: 14, fontWeight: '600' },
   headerTitre: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
-  banniere: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(76,175,80,0.1)', borderRadius: 16, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: 'rgba(76,175,80,0.25)', gap: 12 },
+  banniere: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(76,175,80,0.1)', borderRadius: 16, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: 'rgba(76,175,80,0.2)' },
   banniereTitre: { fontSize: 15, fontWeight: 'bold', color: '#4CAF50', marginBottom: 3 },
   banniereTexte: { fontSize: 12, color: '#A8C0DC' },
   conseilContainer: { backgroundColor: 'rgba(255,193,7,0.08)', borderRadius: 10, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,193,7,0.2)' },
@@ -431,7 +453,7 @@ const styles = StyleSheet.create({
   chargementBouton: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   boutonRetour: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   boutonRetourTexte: { color: '#C8D8EE', fontWeight: '600', fontSize: 14 },
-  resultBanniere: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(76,175,80,0.12)', borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(76,175,80,0.3)', gap: 12 },
+  resultBanniere: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(76,175,80,0.12)', borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(76,175,80,0.3)' },
   resultBanniereEmoji: { fontSize: 36 },
   resultBanniereTitre: { color: '#4CAF50', fontSize: 16, fontWeight: '800', marginBottom: 3 },
   resultBanniereTexte: { color: '#8BA4C4', fontSize: 12 },
