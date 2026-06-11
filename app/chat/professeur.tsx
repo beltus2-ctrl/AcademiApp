@@ -545,7 +545,7 @@ export default function ChatProfesseur() {
 
         {professeurs.length === 0 && !chargement && (
           <View style={styles.videContainer}>
-            <Text style={styles.videEmoji}>👨‍���</Text>
+            <Text style={styles.videEmoji}>👨‍🏫</Text>
             <Text style={styles.videTitre}>Aucun professeur enregistre</Text>
             <Text style={styles.videTexte}>
               AcademiAI est disponible pour vous aider en attendant ! 🤖
